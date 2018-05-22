@@ -4,7 +4,8 @@
   "description": "game wiki api",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dockerbuild": "docker build -t group18/cs493finalproject .",
+    "startcontainer": "docker run --rm -p 8000:8000 group18/cs493finalproject",
     "start": "node server.js"
   },
   "author": "Samuel Bonner, Ryan Crane, Nicholas Giles, Jason Ye",

@@ -27,6 +27,12 @@ app.locals.mysqlPool = mysql.createPool({
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+app.use('/', function(req, res, next){
+  console.log(req.url);
+  console.log(req.body);
+  next();
+})
+
 app.use('/', api);
 
 app.use('*', function (req, res, next) {
