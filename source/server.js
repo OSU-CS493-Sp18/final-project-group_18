@@ -35,8 +35,8 @@ app.use('/', function(req, res, next){
 
 app.use('/', api);
 
-app.use('*', function (req, res, next) {
-  res.status(404).send("I can't let you do that star fox");
+app.use('*', function (req, res) {
+  res.status(404).send("Our princess is in another castle");
 });
 
 app.listen(port, function() {

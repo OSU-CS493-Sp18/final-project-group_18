@@ -1,8 +1,31 @@
 const router = require('express').Router();
+const mysql = require('mysql');
+
+function getTestRow(mysqlPool){
+  return new Promise((resolve, reject) => {
+    mysqlPool.query('SELECT * FROM test',function(err, result){
+      if(err){
+        console.log(err);
+        reject(err);
+      }
+      else {
+        resolve(result);
+      }
+    });
+  });
+}
 
 router.get('/', function(req, res){
-  res.status(200).json({
+  const mysqlPool = req.app.locals.mysqlPool;
+
+  getTestRow(mysqlPool).then((row) => {
+    res.status(200).json({
+    result: row,
     url: req.url
+    });
+  })
+  .catch((err) => {
+    res.status(500).send(err);
   });
 });
 
