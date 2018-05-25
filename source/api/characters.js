@@ -1,31 +1,24 @@
 const router = require('express').Router();
-const mysql = require('mysql');
 
-function getTestRow(mysqlPool){
-  return new Promise((resolve, reject) => {
-    mysqlPool.query('SELECT * FROM test',function(err, result){
-      if(err){
-        console.log(err);
-        reject(err);
-      }
-      else {
-        resolve(result);
-      }
-    });
-  });
-}
+const characterSchema = {
+  name: { required: true },
+  playerid: { required: true },
+  class: { required: true },
+  strength: { required: true },
+  dexterity: { required: true },
+  constitution: { required: true },
+  intelligence: { required: true },
+  wisdom: { required: true },
+  charisma: { required: true },
+  nickname: { required: false },
+  age: { required: false },
+  gender: { required: false },
+  expeerience: { required: false }
+};
 
 router.get('/', function(req, res){
-  const mysqlPool = req.app.locals.mysqlPool;
-
-  getTestRow(mysqlPool).then((row) => {
-    res.status(200).json({
-    result: row,
+  res.status(200).json({
     url: req.url
-    });
-  })
-  .catch((err) => {
-    res.status(500).send(err);
   });
 });
 
