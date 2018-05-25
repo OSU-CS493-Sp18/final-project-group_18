@@ -1,43 +1,18 @@
-import { resolve } from 'dns';
-
 const router = require('express').Router();
-const validation = require('../../lib/validation');
 const mysql = require('mysql');
 
-const mysqlHost = process.env.MYSQL_HOST;
-const mysqlPassword = process.env.MYSQL_PASSWORD;
-const mysqlUser = process.env.MYSQL_USER;
-const mysqlDB = process.env.MYSQL_DATABASE;
-const mysqlPort = process.env.MYSQL_PORT || '3306';
-
-console.log("== MYSQL_HOST:", mysqlHost);
-
-const maxMySQLConnections = 10;
-const mysqlPool = mysql.createPool({
-  host: mysqlHost,
-  port: mysqlPort,
-  database: mysqlDB,
-  user: mysqlUser,
-  password: mysqlPassword,
-  connectionLimit: maxMySQLConnections
-});
-
-let players = require('../players');
 
 exports.router = router;
-exports.players = players;
 
 const playerSchema = {
     playerID: {require: true},
     username: {require: true},
     password: {require: true}
 };
-
-
 /*
- * Fetch information from every players 
+ * Fetch information from every players
 */
-function getPlayerInfo(){
+function getPlayerInfo(mysqlPool){
     return new Promise((resolve, reject) => {
         mysqlPool.query(
             'SELECT * FROM players',
@@ -53,7 +28,8 @@ function getPlayerInfo(){
 }
 
 router.get('/', function (req, res) {
-    getPlayerInfo()
+  const mysqlPool = req.app.locals.mysqlPool;
+    getPlayerInfo(mysqlPool)
     .then((playerInfo) => {
         if(playerInfo){
             res.status(200).json(playerInfo);
@@ -82,7 +58,7 @@ router.get('/:playerID/characters', function(req, res){
 /*
  * Route to create a new player.
  */
-function insertNewPlayer(player){
+function insertNewPlayer(mysqlPool, player){
     return new Promise((resolve, reject) => {
         const playerValues = {
             id: null,
@@ -104,6 +80,7 @@ function insertNewPlayer(player){
     });
 }
 router.post('/', function (req, res, next){
+  const mysqlPool = req.app.locals.mysqlPool;
     if(req.body, req.body.playerID, req.body.username, req.body.password){
         insertNewPlayer(req.body)
         .then((id)=>{
@@ -125,4 +102,13 @@ router.post('/', function (req, res, next){
             err: "Request needs a JSON body with player ID, user name and password"
         });
     }
+});
+
+//login endpoint
+router.post('/login', function(req, res){
+  const mysqlPool = req.app.locals.mysqlPool;
+
+  res.status(200).json({
+    token: "jwt goes here"
+  });
 });

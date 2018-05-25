@@ -1,31 +1,7 @@
-import { resolve } from 'dns';
-
 const router = require('express').Router();
-const validation = require('../../lib/validation');
 const mysql = require('mysql');
 
-const mysqlHost = process.env.MYSQL_HOST;
-const mysqlPassword = process.env.MYSQL_PASSWORD;
-const mysqlUser = process.env.MYSQL_USER;
-const mysqlDB = process.env.MYSQL_DATABASE;
-const mysqlPort = process.env.MYSQL_PORT || '3306';
-
-console.log("== MYSQL_HOST:", mysqlHost);
-
-const maxMySQLConnections = 10;
-const mysqlPool = mysql.createPool({
-  host: mysqlHost,
-  port: mysqlPort,
-  database: mysqlDB,
-  user: mysqlUser,
-  password: mysqlPassword,
-  connectionLimit: maxMySQLConnections
-});
-
-let item = require('./items');
-
 exports.router = router;
-exports.items = items;
 
 const itemSchema = {
     playerID: {require: true},
@@ -36,9 +12,9 @@ const itemSchema = {
 };
 
 /*
-* Gets a paginated list of items in the game. 
+* Gets a paginated list of items in the game.
 */
-function getItemPage(page, count) {
+function getItemPage(mysqlPool, page, count) {
     return new Promise((resolve, reject) => {
       const numPerPage = 10;
       const lastPage = Math.ceil(count / numPerPage);
@@ -65,7 +41,7 @@ function getItemPage(page, count) {
       );
     });
   }
-function getItemCount() {
+function getItemCount(mysqlPool) {
     return new Promise((resolve, reject) => {
       mysqlPool.query(
         'SELECT COUNT(*) AS count FROM items',
@@ -80,63 +56,38 @@ function getItemCount() {
     });
 }
 router.get('/', function (req, res) {
-    getBusinessesCount()
+  const mysqlPool = req.app.locals.mysqlPool;
+    getItemCount(mysqlPool)
       .then((count) => {
-        return getBusinessesPage(parseInt(req.query.page) || 1, count);
+        return getItemPage(mysqlPool, parseInt(req.query.page) || 1, count);
       })
-      .then((businessesInfo) => {
-      businessesInfo.links = {};
-      let { links, totalPages, pageNumber } = businessesInfo;
+      .then((itemInfo) => {
+      itemInfo.links = {};
+      let { links, totalPages, pageNumber } = itemInfo;
         if (pageNumber < totalPages) {
-          links.nextPage = '/businesses?page=' + (pageNumber + 1);
-          links.lastPage = '/businesses?page=' + totalPages;
+          links.nextPage = '/item?page=' + (pageNumber + 1);
+          links.lastPage = '/item?page=' + totalPages;
         }
         if (pageNumber > 1) {
-          links.prevPage = '/businesses?page=' + (pageNumber - 1);
-         links.firstPage = '/businesses?page=1';
+          links.prevPage = '/item?page=' + (pageNumber - 1);
+         links.firstPage = '/item?page=1';
         }
-        res.status(200).json(businessesInfo);
+        res.status(200).json(itemInfo);
       })
       .catch((err) => {
         console.log(err)
         res.status(500).json(
-      
+
           {
-            error: "Error fetching businesses list!!"
+            error: "Error fetching items list!!"
           });
       });
-});
-
-router.get('/', function (req, res) {
-    getItemCount()
-        .then((count) => {
-            return getItemPage(parseInt(req.query.page) || 1, count);       
-        })
-        .then((itemInfo) => {
-            itemInfo.links = {};
-            let {links, totalPages, pageNumber } = itemInfo;
-                if(pageNumber < totalPages) {
-                    links.nextPage = '/items?page=' + (pageNumber + 1);
-                    links.lastPage = '/items?page=' + totalPages;
-                }
-                if (pageNumber > 1){
-                    links.prevPage = '/items?page=' + (pageNumber - 1);
-                    links.firstPage = '/items?page=1';
-                }
-                res.status(200).json(itemInfo);
-        })
-        .catch((err) => {
-            console.log(err)
-            res.status(500).json({
-                error: "Error fetching items list!"
-            });
-        });
 });
 
 /*
  * Route to fetch info about a specific item.
  */
-function getItemByID(itemID) {
+function getItemByID(mysqlPool, itemID) {
     return new Promise((resolve, reject) => {
       mysqlPool.query(
         'SELECT * FROM items WHERE id = ?',
@@ -152,8 +103,9 @@ function getItemByID(itemID) {
     });
   }
 router.get('/:itemID', function (req, res, next){
+  const mysqlPool = req.app.locals.mysqlPool;
     const itemID = parseInt(req.params.itemID);
-    getItemByID(itemID)
+    getItemByID(mysqlPool, itemID)
     .then((item) => {
         if(item){
             res.status(200).json(item);
@@ -172,7 +124,7 @@ router.get('/:itemID', function (req, res, next){
 /*
  * Route to create a new item.
  */
-function insertNewItem(item){
+function insertNewItem(mysqlPool, item){
     return new Promise((resolve, reject) => {
         const itemValues = {
             id: null,
@@ -195,8 +147,9 @@ function insertNewItem(item){
     });
 }
 router.post('/', function (req, res, next){
+  const mysqlPool = req.app.locals.mysqlPool;
     if(req.body, req.body.playerID, req.body.price, req.body.location, req.body.rarity){
-        insertNewItem(req.body)
+        insertNewItem(mysqlPool, req.body)
         .then((id)=>{
             res.status(201).json({
                 id: id,
