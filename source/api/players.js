@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const { validateAgainstSchema } = require('../lib/validation');
 const { genToken, requireAuthentication } = require('../lib/authentication');
 
+const saltSize = 8;
 
 exports.router = router;
 
