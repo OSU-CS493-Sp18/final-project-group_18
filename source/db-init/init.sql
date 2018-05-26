@@ -1,13 +1,16 @@
 SET Foreign_Key_checks=0;
 
-DROP TABLE IF EXISTS test;
+DROP TABLE IF EXISTS players;
 
-CREATE TABLE test(
-  ID int NOT NULL AUTO_INCREMENT,
-  message text,
-  PRIMARY KEY(ID)
+CREATE TABLE players(
+  id int NOT NULL AUTO_INCREMENT,
+  name varchar(255),
+  username varchar(32) NOT NULL,
+  password varchar(32) NOT NULL,
+  email varchar(255) NOT NULL,
+  PRIMARY KEY(ID),
+  UNIQUE(username),
+  UNIQUE(email)
 )ENGINE = InnoDB;
-
-INSERT INTO test VALUES (NULL, "Test Succeeded");
 
 SET Foreign_Key_checks=1;

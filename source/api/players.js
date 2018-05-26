@@ -1,13 +1,18 @@
 const router = require('express').Router();
 const mysql = require('mysql');
+const bcrypt = require('bcrypt');
+
+const { validateAgainstSchema } = require('../lib/validation');
+const { genToken, requireAuthentication } = require('../lib/authentication');
 
 
 exports.router = router;
 
 const playerSchema = {
-    playerID: {require: true},
+    name: {require: false},
     username: {require: true},
-    password: {require: true}
+    password: {require: true},
+    email: {require: true}
 };
 /*
  * Fetch information from every players
@@ -16,14 +21,14 @@ function getPlayerInfo(mysqlPool){
     return new Promise((resolve, reject) => {
         mysqlPool.query(
             'SELECT * FROM players',
-            function (err, results) {
-                if (err) {
+            function(err, results){
+                if(err){
+                  console.log(err);
                     reject(err);
-                } else {
+                } else{
                     resolve(result);
                 }
-            }
-        )
+            })
     });
 }
 
@@ -48,10 +53,55 @@ router.get('/', function (req, res) {
 /*
  * Fetch character information from specific player.
  */
-router.get('/:playerID/characters', function(req, res){
+function getPlayerByID(mysqlPool, playerID){
+  return new Promise((resolve, reject) => {
+    mysqlPool.query('SELECT * FROM players WHERE id=?',
+    playerID,
+    function(err, result){
+        if(err){
+          console.log(err);
+          reject(err);
+        } else{
+          resolve(result[0]);
+        }
+    })
+  });
+}
+
+function getCharactersByPID(mysqlPool, pid){
+  return new Promise((resolve, reject) => {
+    mysqlPool.query('SELECT * FROM characters WHERE playerid=?',
+    pid,
+    function(err, results){
+      if(err){
+        console.log(err);
+        reject(err);
+      } else{
+        resolve(results);
+      }
+    })
+  });
+}
+
+router.get('/:playerID/characters', function(req, res, next){
+const mysqlPool = req.app.locals.mysqlPool;
+links = [];
+  getPlayer(mysqlPool, req.params.playerID)
+  .then((player) => {
+    return getCharactersByPID(mysqlPool, player.id);
+  })
+  .then((characters) => {
+    for(i=0; i<characters.length; i++){
+      links[i] = `/characters/${characters[i].id}`;
+    }
     res.status(200).json({
-        url:req.url
+      characters: characters,
+      links: links
     });
+  })
+  .catch((err) => {
+    next();
+  });
 });
 
 
@@ -59,35 +109,42 @@ router.get('/:playerID/characters', function(req, res){
  * Route to create a new player.
  */
 function insertNewPlayer(mysqlPool, player){
-    return new Promise((resolve, reject) => {
-        const playerValues = {
+  return bcrypt.hash(user.password, saltSize)
+  .then((passwordHash) => {
+        var playerValues = {
             id: null,
-            playerID: player.playerID,
             username: player.username,
-            password: player.password
+            password: passwordHash,
+            email: player.email
         };
-        mysqlPool.query(
-            'INSERT INTO players SET ?',
-            playerValues,
-            function (err, result) {
-                if (err) {
-                reject(err);
-                } else {
-                    resolve(result.insertId);
-          }
+        if(player.name){
+          playerValues.name = player.name;
         }
-      );
+        return new Promise((resolve, reject) => {
+          mysqlPool.query(
+              'INSERT INTO players SET ?',
+              playerValues,
+              function(err, result){
+                  if(err){
+                    console.log(err)
+                    reject(err);
+                  } else{
+                    resolve(result.insertId);
+            }
+          });
+      });
     });
 }
+
 router.post('/', function (req, res, next){
   const mysqlPool = req.app.locals.mysqlPool;
-    if(req.body, req.body.playerID, req.body.username, req.body.password){
-        insertNewPlayer(req.body)
-        .then((id)=>{
+    if(validateAgainstSchema(req.body, playerSchema)){
+        insertNewPlayer(mysqlPool, req.body)
+        .then((id) => {
             res.status(201).json({
                 id: id,
                 links: {
-                    player: '/players/' + id
+                    player: `/players/${id}`
                 }
             });
         })
@@ -104,11 +161,59 @@ router.post('/', function (req, res, next){
     }
 });
 
+function getPlayerByName(mysqlPool, username){
+  return new Promise((resolve, reject) => {
+    mysqlPool.query('SELECT * FROM players WHERE username=?',
+    username,
+    function(err, result){
+        if(err){
+          console.log(err);
+          reject(err);
+        } else{
+          resolve(result[0]);
+        }
+    })
+  });
+}
+
 //login endpoint
-router.post('/login', function(req, res){
+router.post('/login', function(req, res, next){
   const mysqlPool = req.app.locals.mysqlPool;
 
-  res.status(200).json({
-    token: "jwt goes here"
-  });
+  if(req.body && req.body.username && req.body.password){
+    getPlayerByName(req.body.username)
+    .then((user) => {
+      if(user){
+        return bcrypt.compare(req.body.password, user.password);
+      } else{
+      console.log(user);
+      return Promise.reject(401);
+      }
+    }).then((loginSucceeded) => }{
+      if(loginSucceeded){
+        return genToken(req.body.username);
+      } else {
+        console.log(loginSucceeded);
+        return Promise.reject(401);
+      }
+    }).then((token) => {
+      res.status(200).json({
+        token: token
+      });
+    }).catch((err) => {
+      console.log(err);
+      if(err === 401){
+        next();
+        });
+      } else {
+        res.status(500).json({
+          error: "login failed"
+        });
+      }
+    })
+  } else{
+    res.status(400).json({
+      error: "invalid request body"
+    });
+  }
 });
