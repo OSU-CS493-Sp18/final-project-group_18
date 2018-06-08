@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const validation = require('../lib/validation');
+const { generateAuthToken, requireAuthentication } = require('../lib/auth');
 
 //SQL code
 const mysql = require('mysql');
@@ -195,29 +196,35 @@ function replaceSpellByID(spellID, spell, mysqlPool) {
   });
 }
 
-router.put('/:spellID', function (req, res, next) {
+router.put('/:spellID', requireAuthentication, function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const spellID = parseInt(req.params.spellID);
-  //check for ownership TODO
+ 
   if (validation.validateAgainstSchema(req.body, spellSchema)) {
-    replaceSpellByID(spellID, req.body, mysqlPool)
-      .then((updateSuccessful) => {
-        if (updateSuccessful) {
-          res.status(200).json({
-            links: {
-              spell: `/spells/${spellID}`
-            }
-          });
-        } else {
-          next();
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json({
-          error: "Unable to update specified spell.  Please try again later."
-        });
-      });
+	  if (req.user !== req.params.userID) {
+		res.status(403).json({
+		  error: "Unauthorized to access that resource"
+		});
+	  } else {
+		  replaceSpellByID(spellID, req.body, mysqlPool)
+		  .then((updateSuccessful) => {
+			if (updateSuccessful) {
+			  res.status(200).json({
+				links: {
+				  spell: `/spells/${spellID}`
+				}
+			  });
+			} else {
+			  next();
+			}
+		  })
+		  .catch((err) => {
+			console.log(err);
+			res.status(500).json({
+			  error: "Unable to update specified spell.  Please try again later."
+			});
+		  });
+		}
   } else {
     res.status(400).json({
       error: "Request body is not a valid spell object"
@@ -238,23 +245,29 @@ function deleteSpellByID(spellID, mysqlPool) {
 
 }
 
-router.delete('/:spellID', function (req, res, next) {
+router.delete('/:spellID', requireAuthentication, function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const spellID = parseInt(req.params.spellID);
-  //check for ownership  TODO
-  deleteSpellByID(spellID, mysqlPool)
-    .then((deleteSuccessful) => {
-      if (deleteSuccessful) {
-        res.status(204).end();
-      } else {
-        next();
-      }
-    })
-    .catch((err) => {
-      res.status(500).json({
-        error: "Unable to delete spell.  Please try again later."
-      });
-    });
+  //check for ownership  
+  if (req.user !== req.params.userID) {
+		res.status(403).json({
+		  error: "Unauthorized to access that resource"
+		});
+	  } else {
+		  deleteSpellByID(spellID, mysqlPool)
+		.then((deleteSuccessful) => {
+		  if (deleteSuccessful) {
+			res.status(204).end();
+		  } else {
+			next();
+		  }
+		})
+		.catch((err) => {
+		  res.status(500).json({
+			error: "Unable to delete spell.  Please try again later."
+		  });
+		});
+	  }
 });
 
 exports.router = router;
