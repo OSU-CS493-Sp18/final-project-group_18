@@ -134,7 +134,7 @@ function insertNewSpell(spell) {
   return new Promise((resolve, reject) => {
     const spellValues = {
       id: null,
-      owner_id: spell.ownerID,
+      ownerID: spell.ownerID,
       name: spell.name,
 	  cost: spell.cost,
 	  damage: spell.damage,
@@ -159,12 +159,12 @@ router.post('/', function (req, res, next) {
   if (validation.validateAgainstSchema(req.body, spellSchema)) {
     let spell = validation.extractValidFields(req.body, spellSchema);
 	//check if spell already exists ? TODO
-    insertNewspell(spell)
+    insertNewSpell(spell)
 	 .then((id) => {
 		res.status(201).json({
 		id: id,
 		links: {
-			spell: `/spells/${spell.id}`
+			spell: `/spells/${id}`
 		}
 		});
 	 })

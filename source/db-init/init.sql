@@ -20,8 +20,7 @@ CREATE TABLE spell (
 	cost MEDIUMINT NOT NULL,
 	damage MEDIUMINT,
 	school VARCHAR(255),
-	PRIMARY KEY (id),
-	FOREIGN KEY (ownerID) REFERENCES player (id)
+	PRIMARY KEY (id)
 );
 
 INSERT INTO player VALUES (NULL, "Bob", "bob", "encrypted", "email@email.com");
