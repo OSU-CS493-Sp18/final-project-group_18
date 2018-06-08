@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const mysql = require('mysql');
 
 const characterSchema = {
   name: { required: true },

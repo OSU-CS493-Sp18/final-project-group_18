@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const mysql = require('mysql');
 
 router.get('/', function(req, res){
   const mysqlPool = req.app.locals.mysqlPool;
