@@ -21,13 +21,13 @@ const playerSchema = {
 function getPlayerInfo(mysqlPool){
     return new Promise((resolve, reject) => {
         mysqlPool.query(
-            'SELECT * FROM players',
+            'SELECT username, email FROM players',
             function(err, results){
                 if(err){
                   console.log(err);
                     reject(err);
                 } else{
-                    resolve(result);
+                    resolve(results);
                 }
             })
     });
@@ -87,7 +87,7 @@ function getCharactersByPID(mysqlPool, pid){
 router.get('/:playerID/characters', function(req, res, next){
 const mysqlPool = req.app.locals.mysqlPool;
 links = [];
-  getPlayer(mysqlPool, req.params.playerID)
+  getPlayerByID(mysqlPool, req.params.playerID)
   .then((player) => {
     return getCharactersByPID(mysqlPool, player.id);
   })
