@@ -1,5 +1,8 @@
 const router = require('express').Router();
+
 const validation = require('../lib/validation');
+const mysql = require('mysql');
+
 
 const characterSchema = {
   name: { required: true },
