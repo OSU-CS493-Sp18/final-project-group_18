@@ -12,7 +12,6 @@ const mysqlPort = process.env.MYSQL_PORT || '3306';
 const mysqlDBName = process.env.MYSQL_DATABASE;
 const mysqlUser = process.env.MYSQL_USER;
 const mysqlPassword = process.env.MYSQL_PASSWORD;
-
 const maxMySQLConnections = 10;
 app.locals.mysqlPool = mysql.createPool({
   connectionLimit: maxMySQLConnections,
