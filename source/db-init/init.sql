@@ -2,7 +2,6 @@ DROP TABLE IF EXISTS `items`;
 
 CREATE TABLE `items`(
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
-  `playerID` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `price` varchar(255) NOT NULL,
   `location` varchar(255) NOT NULL,

@@ -26,7 +26,6 @@ exports.router = router;
 exports.items = items;
 
 const itemSchema = {
-    playerID: {require: true},
     name: {require: true},
     price: {require: true},
     location: {require: true},
@@ -149,7 +148,6 @@ function insertNewItem(mysqlPool, item){
     return new Promise((resolve, reject) => {
         const itemValues = {
             id: null,
-            playerID: item.playerID,
             name: item.name, 
             price: item.price,
             location: item.location,
@@ -170,7 +168,7 @@ function insertNewItem(mysqlPool, item){
 }
 router.post('/', function (req, res, next){
   const mysqlPool = req.app.locals.mysqlPool;
-    if(req.body, req.body.playerID, req.body.price, req.body.location, req.body.rarity){
+    if(req.body, req.body.price, req.body.location, req.body.rarity){
         insertNewItem(mysqlPool, req.body)
         .then((id)=>{
             res.status(201).json({
@@ -188,7 +186,7 @@ router.post('/', function (req, res, next){
         });
     } else {
         res.status(400).json ({
-            err: "Request needs a JSON body with player ID, price, location and rarity"
+            err: "Request needs a JSON body with name, price, location and rarity"
         });
     }
 });
@@ -198,7 +196,6 @@ router.post('/', function (req, res, next){
 function updateItemByID(itemID, item) {
   return new Promise((resolve, reject) => {
     const itemValues = {
-      playerID: item.playerID,
       name: item.name,
       price: item.price,
       location: item.location,
@@ -219,7 +216,7 @@ function updateItemByID(itemID, item) {
 }
 router.put('/:itemID', function (req, res, next) {
   const itemID = parseInt(req.params.itemID);
-  if (req.body && req.body.playerID && req.body.name, req.body.price, req.body.location, req.body.rarity) {
+  if (req.body  && req.body.name, req.body.price, req.body.location, req.body.rarity) {
     updateItemByID(itemID, req.body)
       .then((updateSuccessful) => {
         if (updateSuccessful) {
@@ -240,7 +237,7 @@ router.put('/:itemID', function (req, res, next) {
       });
   } else {
     res.status(400).json({
-      error: "Request needs a JSON body with a player id, name, price, location, and rarity."
+      error: "Request needs a JSON body with a name, price, location, and rarity."
     });
   }
 });
@@ -268,6 +265,9 @@ router.delete('/:itemID', function (req, res, next){
   .then((deleteSuccesful) => {
     if(deleteSuccesful) {
       res.status(204).end();
+        links: {
+          item: `/items/${itemID}`
+        }
     } else {
       next();
     }
@@ -275,7 +275,7 @@ router.delete('/:itemID', function (req, res, next){
   .catch((err) => {
     console.log(err)
     res.status(500).json({
-      error: "Unable to deletet item!"
+      error: "Unable to delete item!"
     });
   });
 });
