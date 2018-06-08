@@ -14,7 +14,8 @@
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
-    "jsonwebtoken": "^8.2.1",
-    "mysql": "^2.15.0"
+    "mongodb": "^3.1.0-beta4",
+    "mysql": "^2.15.0",
+	  "jsonwebtoken": "^8.2.1"
   }
 }
