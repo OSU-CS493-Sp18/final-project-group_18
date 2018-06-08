@@ -1,13 +1,14 @@
-SET Foreign_Key_checks=0;
+DROP TABLE IF EXISTS `items`;
 
-DROP TABLE IF EXISTS test;
+CREATE TABLE `items`(
+  `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+  `playerID` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `price` varchar(255) NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `rarity` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
-CREATE TABLE test(
-  ID int NOT NULL AUTO_INCREMENT,
-  message text,
-  PRIMARY KEY(ID)
-)ENGINE = InnoDB;
-
-INSERT INTO test VALUES (NULL, "Test Succeeded");
-
-SET Foreign_Key_checks=1;
+/*INSERT INTO test VALUES (NULL, "Test Succeeded");
+*/

@@ -1,7 +1,29 @@
 const router = require('express').Router();
 const mysql = require('mysql');
 
+
+const mysqlHost = process.env.MYSQL_HOST;
+const mysqlPassword = process.env.MYSQL_PASSWORD;
+const mysqlUser = process.env.MYSQL_USER;
+const mysqlDB = process.env.MYSQL_DATABASE;
+const mysqlPort = process.env.MYSQL_PORT || '3306';
+
+console.log("== MYSQL_HOST:", mysqlHost);
+
+const maxMySQLConnections = 10;
+const mysqlPool = mysql.createPool({
+  host: mysqlHost,
+  port: mysqlPort,
+  database: mysqlDB,
+  user: mysqlUser,
+  password: mysqlPassword,
+  connectionLimit: maxMySQLConnections
+});
+
+let items = require('./items');
+
 exports.router = router;
+exports.items = items;
 
 const itemSchema = {
     playerID: {require: true},
@@ -128,6 +150,7 @@ function insertNewItem(mysqlPool, item){
         const itemValues = {
             id: null,
             playerID: item.playerID,
+            name: item.name, 
             price: item.price,
             location: item.location,
             rarity: item.rarity
@@ -210,6 +233,7 @@ router.put('/:itemID', function (req, res, next) {
         }
       })
       .catch((err) => {
+        console.log(err)
         res.status(500).json({
           error: "Unable to update item."
         });
@@ -238,7 +262,7 @@ function deleteItemByID(itemID) {
     );
   });
 }
-router.delete('/itemID', function (req, res, next){
+router.delete('/:itemID', function (req, res, next){
   const itemID = parseInt(req.params.itemID);
   deleteItemByID(itemID)
   .then((deleteSuccesful) => {
@@ -249,6 +273,7 @@ router.delete('/itemID', function (req, res, next){
     }
   })
   .catch((err) => {
+    console.log(err)
     res.status(500).json({
       error: "Unable to deletet item!"
     });
