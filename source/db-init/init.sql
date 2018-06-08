@@ -1,3 +1,27 @@
+CREATE DATABASE IF NOT EXISTS gamedb;
+
+CREATE TABLE character (
+	id MEDIUMINT NOT NULL AUTO_INCREMENT,
+	playerID MEDIUMINT NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	class VARCHAR(255) NOT NULL,
+  strength MEDIUMINT NOT NULL,
+  dexterity MEDIUMINT NOT NULL,
+  constitution MEDIUMINT NOT NULL,
+  intelligence MEDIUMINT NOT NULL,
+  wisdom MEDIUMINT NOT NULL,
+  charisma MEDIUMINT NOT NULL,
+  age MEDIUMINT,
+  gender VARCHAR(6),
+  experience MEDIUMINT,
+	headSlot MEDIUMINT,
+	chestSlot MEDIUMINT,
+	bootSlot MEDIUMINT,
+	spellSlot1 MEDIUMINT,
+	spellSlot2 MEDIUMINT,
+	PRIMARY KEY (playerID)
+);
+
 DROP TABLE IF EXISTS `items`;
 
 CREATE TABLE `items`(
