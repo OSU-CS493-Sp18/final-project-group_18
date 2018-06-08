@@ -110,7 +110,7 @@ links = [];
  * Route to create a new player.
  */
 function insertNewPlayer(mysqlPool, player){
-  return bcrypt.hash(user.password, saltSize)
+  return bcrypt.hash(player.password, saltSize)
   .then((passwordHash) => {
         var playerValues = {
             id: null,
@@ -182,7 +182,7 @@ router.post('/login', function(req, res, next){
   const mysqlPool = req.app.locals.mysqlPool;
 
   if(req.body && req.body.username && req.body.password){
-    getPlayerByName(req.body.username)
+    getPlayerByName(mysqlPool, req.body.username)
     .then((user) => {
       if(user){
         return bcrypt.compare(req.body.password, user.password);
