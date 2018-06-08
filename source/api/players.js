@@ -190,7 +190,7 @@ router.post('/login', function(req, res, next){
       console.log(user);
       return Promise.reject(401);
       }
-    }).then((loginSucceeded) => }{
+    }).then((loginSucceeded) => {
       if(loginSucceeded){
         return genToken(req.body.username);
       } else {
@@ -205,13 +205,12 @@ router.post('/login', function(req, res, next){
       console.log(err);
       if(err === 401){
         next();
-        });
       } else {
         res.status(500).json({
           error: "login failed"
         });
       }
-    })
+    });
   } else{
     res.status(400).json({
       error: "invalid request body"
