@@ -1,13 +1,23 @@
-SET Foreign_Key_checks=0;
+CREATE DATABASE IF NOT EXISTS gamedb;
 
-DROP TABLE IF EXISTS test;
-
-CREATE TABLE test(
-  ID int NOT NULL AUTO_INCREMENT,
-  message text,
-  PRIMARY KEY(ID)
-)ENGINE = InnoDB;
-
-INSERT INTO test VALUES (NULL, "Test Succeeded");
-
-SET Foreign_Key_checks=1;
+CREATE TABLE character (
+	id MEDIUMINT NOT NULL AUTO_INCREMENT,
+	playerID MEDIUMINT NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	class VARCHAR(255) NOT NULL,
+  strength MEDIUMINT NOT NULL,
+  dexterity MEDIUMINT NOT NULL,
+  constitution MEDIUMINT NOT NULL,
+  intelligence MEDIUMINT NOT NULL,
+  wisdom MEDIUMINT NOT NULL,
+  charisma MEDIUMINT NOT NULL,
+  age MEDIUMINT,
+  gender VARCHAR(6),
+  experience MEDIUMINT,
+	headSlot MEDIUMINT,
+	chestSlot MEDIUMINT,
+	bootSlot MEDIUMINT,
+	spellSlot1 MEDIUMINT,
+	spellSlot2 MEDIUMINT,
+	PRIMARY KEY (playerID)
+);
