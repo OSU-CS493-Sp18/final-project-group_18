@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const mysql = require('mysql');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const { validateAgainstSchema } = require('../lib/validation');
 const { genToken, requireAuthentication } = require('../lib/authentication');

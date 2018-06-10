@@ -19,7 +19,7 @@ CREATE TABLE characters (
 	bootSlot MEDIUMINT,
 	spellSlot1 MEDIUMINT,
 	spellSlot2 MEDIUMINT,
-	PRIMARY KEY (playerID)
+	PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS `items`;
@@ -59,5 +59,5 @@ CREATE TABLE spells (
 	PRIMARY KEY (id)
 );
 
-INSERT INTO player VALUES (NULL, "Bob", "bob", "encrypted", "email@email.com");
-INSERT INTO spell VALUES (NULL, 1, "Fireball", 5, 10, "Fire");
+INSERT INTO players VALUES (NULL, "Bob", "bob", "encrypted", "email@email.com");
+INSERT INTO spells VALUES (NULL, 1, "Fireball", 5, 10, "Fire");

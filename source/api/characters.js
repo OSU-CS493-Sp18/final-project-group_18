@@ -153,14 +153,30 @@ function checkIfItemExists(itemID, mysqlPool) {
           resolve(results[0].count > 0);
         }
       }
-    )
+    );
+  });
+}
+
+function getPlayerByID(playerID, mysqlPool) {
+  return new Promise((resolve) => {
+    mysqlPool.query(
+      'SELECT * FROM players WHERE id = ?',
+      [ playerID ],
+      (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results[0].count > 0);
+        }
+      }
+    );
   });
 }
 
 router.post('/', function(req, res){
   const mysqlPool = req.app.locals.mysqlPool;
   if (validation.validateAgainstSchema(req.body, characterSchema)) {
-    character = validation.extractValidFields(character, characterSchema);
+    character = validation.extractValidFields(req.body, characterSchema);
     character.id = null;
     getPlayerByID(req.body.playerid, mysqlPool)
       .then((player) => {
