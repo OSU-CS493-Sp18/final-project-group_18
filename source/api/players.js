@@ -245,3 +245,6 @@ router.post('/login', function(req, res, next){
     });
   }
 });
+
+exports.router = router;
+exports.getPlayerByID = getPlayerByID;

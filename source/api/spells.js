@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const validation = require('../lib/validation');
 const { generateAuthToken, requireAuthentication } = require('../lib/auth');
+// const { getPlayerByID } = require('./players');
 
 //SQL code
 const mysql = require('mysql');
@@ -115,7 +116,7 @@ function getSpellByID(spellID) {
 
 router.get('/:spellID', function (req, res, next) {
   const spellID = parseInt(req.params.spellID);
-  
+
   getSpellByID(spellID)
     .then((spells) => {
       if (spells) {
@@ -172,10 +173,10 @@ router.post('/', function (req, res, next) {
 	 .catch((err) => {
 		 console.error(err);
 		 res.status(500).json({
-			error: "Error inserting spells." 
+			error: "Error inserting spells."
 		 });
 	 });
-    
+
   } else {
     res.status(400).json({
       error: "Request body is not a valid spells object"
@@ -196,19 +197,14 @@ function replaceSpellByID(spellID, spells, mysqlPool) {
   });
 }
 
-router.put('/:spellID', requireAuthentication, function (req, res, next) {
+router.put('/:spellID', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const spellID = parseInt(req.params.spellID);
- 
+
   if (validation.validateAgainstSchema(req.body, spellSchema)) {
-	  if (req.user !== req.params.userID) {
-		res.status(403).json({
-		  error: "Unauthorized to access that resource"
-		});
-	  } else {
-		  replaceSpellByID(spellID, req.body, mysqlPool)
-		  .then((updateSuccessful) => {
-			if (updateSuccessful) {
+    replaceSpellByID(spellID, req.body, mysqlPool)
+      .then((updateSuccessful) => {
+        if (updateSuccessful) {
 			  res.status(200).json({
 				links: {
 				  spells: `/spells/${spellID}`
@@ -219,17 +215,12 @@ router.put('/:spellID', requireAuthentication, function (req, res, next) {
 			}
 		  })
 		  .catch((err) => {
-			console.log(err);
-			res.status(500).json({
-			  error: "Unable to update specified spells.  Please try again later."
-			});
-		  });
+  			console.log(err);
+  			res.status(500).json({
+  			  error: "Unable to update specified spells.  Please try again later."
+  			});
+      });
 		}
-  } else {
-    res.status(400).json({
-      error: "Request body is not a valid spells object"
-    });
-  }
 });
 
 function deleteSpellByID(spellID, mysqlPool) {
@@ -245,29 +236,29 @@ function deleteSpellByID(spellID, mysqlPool) {
 
 }
 
-router.delete('/:spellID', requireAuthentication, function (req, res, next) {
+router.delete('/:spellID', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const spellID = parseInt(req.params.spellID);
-  //check for ownership  
-  if (req.user !== req.params.userID) {
-		res.status(403).json({
-		  error: "Unauthorized to access that resource"
-		});
-	  } else {
-		  deleteSpellByID(spellID, mysqlPool)
-		.then((deleteSuccessful) => {
-		  if (deleteSuccessful) {
-			res.status(204).end();
-		  } else {
-			next();
-		  }
-		})
-		.catch((err) => {
-		  res.status(500).json({
-			error: "Unable to delete spells.  Please try again later."
-		  });
-		});
-	  }
+  // //check for ownership
+  // if (req.user !== req.params.userID) {
+	// 	res.status(403).json({
+	// 	  error: "Unauthorized to access that resource"
+	// 	});
+	//   } else {
+  deleteSpellByID(spellID, mysqlPool)
+	 .then((deleteSuccessful) => {
+	    if (deleteSuccessful) {
+        res.status(204).end();
+      } else {
+		      next();
+	    }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        error: "Unable to delete spells.  Please try again later."
+      });
+    });
+	  // }
 });
 
 exports.router = router;
