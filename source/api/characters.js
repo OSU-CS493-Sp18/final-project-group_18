@@ -126,8 +126,8 @@ function insertNewCharacter(character, mysqlPool) {
   return new Promise((resolve, reject) => {
     mysqlPool.query(
       'INSERT INTO characters SET ?',
-      characters,
-      (err, results) => {
+      [ character ],
+      (err, result) => {
         if (err) {
           reject(err);
         } else {
@@ -138,35 +138,61 @@ function insertNewCharacter(character, mysqlPool) {
   });
 }
 
-function checkIfItemExists(itemID, mysqlPool) {
-  return new Promise((resolve, reject) => {
-    if (itemID == null) {
-      Promise.resolve(true);
-    }
-    mysqlPool.query(
-      'SELECT * FROM items WHERE id = ?',
-      [ itemID ],
-      function (err, results) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(results[0].count > 0);
-        }
-      }
-    );
-  });
-}
+// function checkIfSpellExists(spellID, mysqlPool) {
+//   return new Promise((resolve, reject) => {
+//     console.log(spellID);
+//     if (typeof spellID != 'undefined') {
+//       mysqlPool.query(
+//         'SELECT * FROM spells WHERE id = ?',
+//         [ spellID ],
+//         function (err, results) {
+//           if (err) {
+//             reject(err);
+//           } else {
+//             console.log(results.count);
+//             resolve(results.count > 0);
+//           }
+//         }
+//       );
+//     } else {
+//       resolve(true);
+//     }
+//   });
+// }
+//
+// function checkIfItemExists(itemID, mysqlPool) {
+//   return new Promise((resolve, reject) => {
+//     console.log(itemID);
+//     if (typeof itemID != 'undefined') {
+//       console.log("Made it inside\n");
+//       mysqlPool.query(
+//         'SELECT * FROM items WHERE id = ?',
+//         [ itemID ],
+//         function (err, results) {
+//           if (err) {
+//             reject(err);
+//           } else {
+//             resolve(results.count > 0);
+//           }
+//         }
+//       );
+//     } else {
+//       resolve(true);
+//     }
+//   });
+// }
 
 function getPlayerByID(playerID, mysqlPool) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     mysqlPool.query(
       'SELECT * FROM players WHERE id = ?',
       [ playerID ],
       (err, results) => {
+        // console.log(results.count);
         if (err) {
           reject(err);
         } else {
-          resolve(results[0].count > 0);
+          resolve(results[0]);
         }
       }
     );
@@ -181,46 +207,47 @@ router.post('/', function(req, res){
     getPlayerByID(req.body.playerid, mysqlPool)
       .then((player) => {
         if (player) {
-          return getPlayerByID(req.body.playerid, mysqlPool);
+          return insertNewCharacter(req.body, mysqlPool);
+          // return checkIfItemExists(req.body.headSlot, mysqlPool);
         } else {
           return Promise.reject(400);
         }
       })
-      .then((headSlot) => {
-        if (item) {
-          return checkIfItemExists(req.body.chestSlot, mysqlPool);
-        } else {
-          return Promise.reject("headSlot");
-        }
-      })
-      .then((chestSlot) => {
-        if (chestSlot) {
-          return checkIfItemExists(req.body.bootSlot, mysqlPool);
-        } else {
-          Promise.reject("chestSlot");
-        }
-      })
-      .then((bootSlot) => {
-        if (bootSlot) {
-          return checkIfSpellExists(req.body.spellSlot1, mysqlPool);
-        } else {
-          Promise.reject("bootSlot");
-        }
-      })
-      .then((spellSlot1) => {
-        if (spellSlot1) {
-          return checkIfSpellExists(req.body.spellSlot2, mysqlPool);
-        } else {
-          Promise.reject("spellSlot1");
-        }
-      })
-      .then((spellSlot2) => {
-        if (spellSlot2) {
-          return insertNewCharacter(req.body, mysqlPool);
-        } else {
-          Promise.reject("spellSlot2");
-        }
-      })
+      // .then((headSlot) => {
+      //   if (headSlot) {
+      //     return checkIfItemExists(req.body.chestSlot, mysqlPool);
+      //   } else {
+      //     return Promise.reject("headSlot");
+      //   }
+      // })
+      // .then((chestSlot) => {
+      //   if (chestSlot) {
+      //     return checkIfItemExists(req.body.bootSlot, mysqlPool);
+      //   } else {
+      //     return Promise.reject("chestSlot");
+      //   }
+      // })
+      // .then((bootSlot) => {
+      //   if (bootSlot) {
+      //     return checkIfSpellExists(req.body.spellSlot1, mysqlPool);
+      //   } else {
+      //     return Promise.reject("bootSlot");
+      //   }
+      // })
+      // .then((spellSlot1) => {
+      //   if (spellSlot1) {
+      //     return checkIfSpellExists(req.body.spellSlot2, mysqlPool);
+      //   } else {
+      //     return Promise.reject("spellSlot1");
+      //   }
+      // })
+      // .then((spellSlot2) => {
+      //   if (spellSlot2) {
+      //     return insertNewCharacter(req.body, mysqlPool);
+      //   } else {
+      //     return Promise.reject("spellSlot2");
+      //   }
+      // })
       .then((id) => {
         res.status(201).json({
           id: id,
@@ -231,27 +258,28 @@ router.post('/', function(req, res){
       })
       .catch((err) => {
         console.log(err);
-        if (err == "headSlot") {
-          res.status(400).json({
-            error: `headSlot item does not exist: ${req.body.headSlot}`
-          });
-        } else if (err == "chestSlot") {
-          res.status(400).json({
-            error: `chestSlot item does not exist: ${req.body.chestSlot}`
-          });
-        } else if (err == "bootSlot") {
-          res.status(400).json({
-            error: `bootSlot item does not exist: ${req.body.bootSlot}`
-          });
-        } else if (err == "spellSlot1") {
-          res.status(400).json({
-            error: `spellSlot1 item does not exist: ${req.body.spellSlot1}`
-          });
-        } else if (err == "spellSlot2") {
-          res.status(400).json({
-            error: `spellSlot2 item does not exist: ${req.body.spellSlot2}`
-          });
-        } else if (err == 400) {
+        // if (err == "headSlot") {
+        //   res.status(400).json({
+        //     error: `headSlot item does not exist: ${req.body.headSlot}`
+        //   });
+        // } else if (err == "chestSlot") {
+        //   res.status(400).json({
+        //     error: `chestSlot item does not exist: ${req.body.chestSlot}`
+        //   });
+        // } else if (err == "bootSlot") {
+        //   res.status(400).json({
+        //     error: `bootSlot item does not exist: ${req.body.bootSlot}`
+        //   });
+        // } else if (err == "spellSlot1") {
+        //   res.status(400).json({
+        //     error: `spellSlot1 item does not exist: ${req.body.spellSlot1}`
+        //   });
+        // } else if (err == "spellSlot2") {
+        //   res.status(400).json({
+        //     error: `spellSlot2 item does not exist: ${req.body.spellSlot2}`
+        //   });
+        // } else
+        if (err == 400) {
           res.status(400).json({
             error: `Invalid player ID: ${req.body.playerid}.`
           });
@@ -268,7 +296,7 @@ router.post('/', function(req, res){
   }
 });
 
-function replaceCharacterByID(charcterID, character, mysqlPool) {
+function replaceCharacterByID(characterID, character, mysqlPool) {
   return new Promise((resolve, reject) => {
     charcter = validation.extractValidFields(character, characterSchema);
     mysqlPool.query('UPDATE characters SET ? WHERE id = ?', [ character, characterID ], (err, result) => {
@@ -283,14 +311,14 @@ function replaceCharacterByID(charcterID, character, mysqlPool) {
 
 router.put('/:characterID', function(req, res){
   const mysqlPool = req.app.locals.mysqlPool;
-  const characterID = parseInt(req.params.characterID);
-  if (validation.validateAgainstSchema(req.body, characterID)) {
-    replaceCharacterByID(characterID, req.body, mysqlPool)
+  // const characterID = parseInt(req.params.characterID);
+  if (validation.validateAgainstSchema(req.body, req.params.characterID)) {
+    replaceCharacterByID(req.params.characterID, req.body, mysqlPool)
       .then((updateSuccessful) => {
         if (updateSuccessful) {
           res.status(200).json({
             links: {
-              character: `/characters/${characterID}`
+              character: `/characters/${req.params.characterID}`
             }
           });
         } else {
