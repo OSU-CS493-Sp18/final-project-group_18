@@ -85,12 +85,12 @@ router.get('/', function (req, res) {
       itemInfo.links = {};
       let { links, totalPages, pageNumber } = itemInfo;
         if (pageNumber < totalPages) {
-          links.nextPage = '/item?page=' + (pageNumber + 1);
-          links.lastPage = '/item?page=' + totalPages;
+          links.nextPage = '/items?page=' + (pageNumber + 1);
+          links.lastPage = '/items?page=' + totalPages;
         }
         if (pageNumber > 1) {
-          links.prevPage = '/item?page=' + (pageNumber - 1);
-         links.firstPage = '/item?page=1';
+          links.prevPage = '/items?page=' + (pageNumber - 1);
+         links.firstPage = '/items?page=1';
         }
         res.status(200).json(itemInfo);
       })
@@ -148,7 +148,7 @@ function insertNewItem(mysqlPool, item){
     return new Promise((resolve, reject) => {
         const itemValues = {
             id: null,
-            name: item.name, 
+            name: item.name,
             price: item.price,
             location: item.location,
             rarity: item.rarity
@@ -279,4 +279,3 @@ router.delete('/:itemID', function (req, res, next){
     });
   });
 });
-
