@@ -1,4 +1,8 @@
 module.exports = {
+
+  validateAgainstSchema(obj, schema) {
+    return obj && Object.keys(schema).every(field => !schema[field].required || obj[field]);
+
   /*
    * Performs data validation on an object by verifying that it contains
    * all required fields specified in a given schema.

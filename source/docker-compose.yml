@@ -7,13 +7,13 @@ services:
     ports:
       - 8000:8000
     environment:
+      KEY: catsanddogs123
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_DATABASE: finalproject
       MYSQL_USER: username
       MYSQL_PASSWORD: password
       PORT: 8000
-
   mysql:
     image: mysql:5
     restart: always
@@ -25,7 +25,6 @@ services:
       MYSQL_DATABASE: finalproject
       MYSQL_USER: username
       MYSQL_PASSWORD: password
-
 volumes:
   final-mysql:
     name: finalproject-mysql-data
